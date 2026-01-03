@@ -1019,9 +1019,15 @@
 
 
             // 2. ACRÉSCIMO DE ÁREA MÍNIMA (sempre aplicado para áreas pequenas)
-            let valorComAcrescimos = subtotalBase * ACRESCIMO_AREA_MINIMA;
+            const ACRESCIMO_AREA_MINIMA = 0.20; // 20%
+
+            let valorComAcrescimos = subtotalBase * (1 + ACRESCIMO_AREA_MINIMA);
             const acrescimos = [];
-            acrescimos.push({ nome: 'Área mínima (custo técnico fixo)', percentual: 150, valor: subtotalBase * 1.50 });
+            acrescimos.push({
+                nome: 'Área mínima (custo técnico fixo)',
+                percentual: 20,
+                valor: subtotalBase * ACRESCIMO_AREA_MINIMA
+            });
 
             // 3. PRAZO
             const prazo = document.querySelector('input[name="prazo"]:checked').value;
@@ -1117,16 +1123,24 @@
 
             // 8. DESMEMBRAMENTO
             if (document.getElementById('desmembramento').checked) {
-                const acrescimo = valorComAcrescimos * 0.30;
-                valorComAcrescimos += acrescimo;
-                acrescimos.push({ nome: 'Desmembramento', percentual: 30, valor: acrescimo });
+            const acrescimo = valorComAcrescimos * 0.10;
+            valorComAcrescimos += acrescimo;
+            acrescimos.push({
+                nome: 'Desmembramento',
+                percentual: 10,
+                valor: acrescimo
+            });
             }
 
             // 9. CONFRONTANTES
             if (document.getElementById('confrontantes').checked) {
-                const acrescimo = valorComAcrescimos * 0.20;
-                valorComAcrescimos += acrescimo;
-                acrescimos.push({ nome: 'Confrontantes sem GEO', percentual: 20, valor: acrescimo });
+            const acrescimo = valorComAcrescimos * 0.05;
+            valorComAcrescimos += acrescimo;
+            acrescimos.push({
+                nome: 'Confrontantes sem GEO',
+                percentual: 5,
+                valor: acrescimo
+            });
             }
 
             // 10. MARGEM DE LUCRO
@@ -1261,3 +1275,4 @@ Gerado em ${new Date(window.orcamentoAtual.data).toLocaleDateString('pt-BR')}`;
     </script>
 </body>
 </html>
+
