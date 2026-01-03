@@ -2,129 +2,217 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>GEOPLAN – Precificação Técnica</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GEOPLAN • Precificação de Serviços</title>
 
+<!-- FONTES / ÍCONES -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #f2f4f7;
-  padding: 20px;
+/* =========================
+   ESTILO GERAL (style.css)
+========================= */
+:root{
+  --verde:#2d7a3e;
+  --verde-escuro:#1f5a2c;
+  --cinza:#f4f6f7;
+  --texto:#2c3e50;
 }
-.container {
-  max-width: 700px;
-  background: #fff;
-  padding: 25px;
-  margin: auto;
-  border-radius: 8px;
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:var(--cinza);
+  color:var(--texto);
 }
-.header {
-  text-align: center;
+
+header{
+  background:var(--verde);
+  color:#fff;
+  padding:15px;
+  text-align:center;
+  font-size:22px;
+  font-weight:bold;
 }
-.header img {
-  max-width: 200px;
+
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:20px;
 }
-h2 {
-  color: #1f4e79;
+
+.card{
+  background:#fff;
+  border-radius:8px;
+  padding:20px;
+  margin-bottom:20px;
+  box-shadow:0 2px 6px rgba(0,0,0,.1);
 }
-label {
-  margin-top: 12px;
-  display: block;
-  font-weight: bold;
+
+label{
+  font-weight:bold;
+  display:block;
+  margin-top:10px;
 }
-input, select {
-  width: 100%;
-  padding: 8px;
-  margin-top: 5px;
+
+input, select{
+  width:100%;
+  padding:8px;
+  margin-top:5px;
 }
-button {
-  margin-top: 20px;
-  padding: 12px;
-  width: 100%;
-  background: #1f4e79;
-  color: #fff;
-  border: none;
-  font-size: 16px;
+
+button{
+  background:var(--verde);
+  color:#fff;
+  border:none;
+  padding:12px;
+  border-radius:6px;
+  cursor:pointer;
+  margin-top:15px;
 }
-.result {
-  margin-top: 20px;
-  background: #eef3f8;
-  padding: 15px;
-  border-radius: 5px;
+
+button:hover{
+  background:var(--verde-escuro);
+}
+
+.resultado{
+  font-size:20px;
+  font-weight:bold;
+  color:var(--verde);
+}
+
+footer{
+  text-align:center;
+  padding:10px;
+  font-size:12px;
+  color:#777;
 }
 </style>
 </head>
 
 <body>
 
+<header>
+GEOPLAN • Calculadora de Precificação
+</header>
+
 <div class="container">
-  <div class="header">
-    <img src="logo-geoplan.png">
-    <h2>Precificação Técnica – Georreferenciamento</h2>
-  </div>
 
-  <label>Área total (ha)</label>
-  <input id="area" type="number">
+<div class="card">
+<h3>Dados do Serviço</h3>
 
-  <label>Certificação SIGEF</label>
-  <select id="sigef"><option value="1.3">Sim</option><option value="1">Não</option></select>
+<label>Categoria</label>
+<select id="categoria">
+  <option value="">Selecione</option>
+  <option value="georreferenciamento">Georreferenciamento</option>
+  <option value="car">CAR</option>
+</select>
 
-  <label>Desmembramento</label>
-  <select id="desm"><option value="1.3">Sim</option><option value="1">Não</option></select>
+<label>Área (hectares)</label>
+<input type="number" id="area">
 
-  <label>Confrontantes sem GEO</label>
-  <select id="conf"><option value="1.2">Sim</option><option value="1">Não</option></select>
+<label>Dias de Campo</label>
+<input type="number" id="dias" value="1">
 
-  <label>CAR inconsistente</label>
-  <select id="car"><option value="1.2">Sim</option><option value="1">Não</option></select>
+<label>Técnicos</label>
+<input type="number" id="tecnicos" value="1">
 
-  <label>Distância</label>
-  <select id="dist"><option value="1">Até 30 km</option><option value="1.1">30–60 km</option></select>
+<label>Distância (km)</label>
+<input type="number" id="distancia">
 
-  <button onclick="calcular()">Calcular Valor</button>
+<label>Margem de Lucro (%)</label>
+<input type="number" id="lucro" value="25">
 
-  <div id="resultado" class="result" style="display:none;"></div>
-  <button onclick="gerarPDF()">Gerar PDF da Proposta</button>
+<button onclick="calcular()">Calcular Orçamento</button>
 </div>
 
+<div class="card" id="resultadoCard" style="display:none">
+<h3>Resultado</h3>
+<p class="resultado" id="resultado"></p>
+<button onclick="gerarPDF()">Gerar PDF</button>
+</div>
+
+</div>
+
+<footer>
+GEOPLAN • Engenharia & Georreferenciamento
+</footer>
+
 <script>
-let valorFinal = 0;
+/* =========================
+   BASE DE DADOS (services-data.js)
+========================= */
 
-function calcular() {
-  let area = Number(areaInput.value);
-  let base = 405.25 + (area <= 20 ? area * 95 : area * 48.63);
+const UTA = 162.10;
 
-  valorFinal = base *
-    sigef.value *
-    desm.value *
-    conf.value *
-    car.value *
-    dist.value;
+const DIARIA_TECNICA = 405.25;
 
-  valorFinal = Math.round(valorFinal / 100) * 100;
-
-  resultado.style.display = "block";
-  resultado.innerHTML = `<strong>Valor sugerido:</strong> R$ ${valorFinal.toLocaleString("pt-BR")}`;
+function calcularValorBase(area){
+  if(area <= 15){
+    return 4052.50 + (2.2 * area * UTA);
+  }else if(area <= 40){
+    return 4052.50 + (1.0 * area * UTA);
+  }else{
+    return 4052.50 + (4.4 * Math.sqrt(area) * UTA);
+  }
 }
 
-function gerarPDF() {
+/* =========================
+   CÁLCULO (calculator.js)
+========================= */
+
+let valorFinal = 0;
+
+function calcular(){
+  const area = Number(document.getElementById("area").value);
+  const dias = Number(document.getElementById("dias").value);
+  const tecnicos = Number(document.getElementById("tecnicos").value);
+  const distancia = Number(document.getElementById("distancia").value);
+  const lucro = Number(document.getElementById("lucro").value);
+
+  if(!area || !dias || !tecnicos){
+    alert("Preencha os campos corretamente");
+    return;
+  }
+
+  const base = calcularValorBase(area);
+  const maoObra = DIARIA_TECNICA * dias * tecnicos;
+  const combustivel = (distancia * 2 / 10) * 6.5;
+  const material = base * 0.07;
+  const desgaste = base * 0.03;
+
+  const subtotal = base + maoObra + combustivel + material + desgaste;
+  const lucroValor = subtotal * (lucro/100);
+
+  valorFinal = subtotal + lucroValor;
+
+  document.getElementById("resultado").innerText =
+    "Valor sugerido: R$ " + valorFinal.toLocaleString("pt-BR",{minimumFractionDigits:2});
+
+  document.getElementById("resultadoCard").style.display="block";
+}
+
+/* =========================
+   PDF (main.js adaptado)
+========================= */
+
+function gerarPDF(){
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF();
+  const doc = new jsPDF();
 
-  pdf.setFontSize(12);
-  pdf.text("GEOPLAN CONSULTORIA E PROJETOS", 20, 20);
-  pdf.text("PROPOSTA DE SERVIÇOS DE GEORREFERENCIAMENTO", 20, 30);
+  doc.setFontSize(18);
+  doc.text("PROPOSTA DE SERVIÇOS - GEOPLAN",20,20);
 
-  pdf.text(`Valor total: R$ ${valorFinal.toLocaleString("pt-BR")}`, 20, 50);
-  pdf.text("Forma de pagamento:", 20, 60);
-  pdf.text("50% adiantado para execução dos serviços", 20, 68);
-  pdf.text("50% restantes a combinar", 20, 76);
+  doc.setFontSize(12);
+  doc.text("Valor Total: R$ " + valorFinal.toLocaleString("pt-BR",{minimumFractionDigits:2}),20,40);
 
-  pdf.text("Prazo: até 60 dias após pagamento inicial.", 20, 90);
-  pdf.text("Responsável técnico habilitado.", 20, 105);
+  doc.text("Condições:",20,60);
+  doc.text("- 50% na contratação",20,70);
+  doc.text("- 50% na entrega",20,80);
+  doc.text("- Prazo: até 60 dias",20,90);
 
-  pdf.save("Proposta_Geoplan.pdf");
+  doc.save("proposta_geoplan.pdf");
 }
 </script>
 
