@@ -930,7 +930,7 @@
         // DADOS E CONSTANTES
         // ========================================
         const VALOR_FIXO_INICIAL = 405.25;
-        const ACRESCIMO_AREA_MINIMA = 1.50; // 150%
+        const ACRESCIMO_AREA_MINIMA = 0.10; // 10%
 
         // ========================================
         // INICIALIZAÇÃO
@@ -1019,7 +1019,7 @@
 
 
             // 2. ACRÉSCIMO DE ÁREA MÍNIMA (sempre aplicado para áreas pequenas)
-            const ACRESCIMO_AREA_MINIMA = 0.20; // 20%
+            const ACRESCIMO_AREA_MINIMA = 0.10; // 10%
 
             let valorComAcrescimos = subtotalBase * (1 + ACRESCIMO_AREA_MINIMA);
             const acrescimos = [];
@@ -1062,7 +1062,7 @@
             // 5. FINALIDADE
             const finalidade = document.querySelector('input[name="finalidade"]:checked').value;
             const finalidadeMap = {
-                'sigef': { nome: 'SIGEF/INCRA + Responsabilidade', percentual: 20, valor: 0.20 },
+                'sigef': { nome: 'SIGEF/INCRA + Responsabilidade', percentual: 05, valor: 0.05 },
                 'desmembramento': { nome: 'Desmembramento (desconto)', percentual: -30, valor: -0.30 },
                 'retificacao': { nome: 'Retificação (desconto)', percentual: -15, valor: -0.15 },
                 'usucapiao': { nome: 'Usucapião', percentual: 25, valor: 0.25 }
@@ -1275,5 +1275,6 @@ Gerado em ${new Date(window.orcamentoAtual.data).toLocaleDateString('pt-BR')}`;
     </script>
 </body>
 </html>
+
 
 
