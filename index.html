@@ -7,6 +7,9 @@
     <title>Geoplan Calculator - Orçamento de Georreferenciamento</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
     
     <style>
         /* =================================
@@ -827,10 +830,29 @@
                             <input type="number" id="margem" class="form-control" value="20" min="0" max="100">
                             <small class="form-hint">Margem comercial recomendada: 15-25%</small>
                         </div>
+                        <!-- CadastrarCliente-->
+                        <div class="form-group">
+                        <label for="clienteNome">Nome do Cliente *</label>
+                        <input type="text" id="clienteNome" class="form-control" placeholder="Ex: André Elias Pereira Neves" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="clienteCpf">CPF do Cliente</label>
+                        <input type="text" id="clienteCpf" class="form-control" placeholder="000.000.000-00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="imovelDescricao">Descrição do Imóvel</label>
+                        <input type="text" id="imovelDescricao" class="form-control" placeholder="Sítio São José - Álvares Machado/SP">
+                    </div>
 
                         <!-- Botões -->
                         <button class="btn btn-primary btn-block" id="btnCalcular">
                             <i class="fas fa-calculator"></i> Calcular Orçamento
+                        </button>
+                        
+                        <button class="btn btn-success btn-block" id="btnSalvar">
+                            <i class="fas fa-file-pdf"></i> Gerar PDF da Proposta
                         </button>
 
                         <button class="btn btn-secondary btn-block" id="btnLimpar">
@@ -903,6 +925,9 @@
 
                             <!-- Actions -->
                             <div class="result-actions">
+                                <button class="btn btn-primary btn-block" id="btnCalcular">
+                                    <i class="fas fa-calculator"></i> Calcular Orçamento
+                                </button>
                                 <button class="btn btn-success btn-block" id="btnSalvar">
                                     <i class="fas fa-save"></i> Salvar Orçamento
                                 </button>
@@ -967,27 +992,23 @@
         }
 
         function initEventListeners() {
-            document.getElementById('btnCalcular').addEventListener('click', calcularOrcamento);
-            document.getElementById('btnLimpar').addEventListener('click', limparFormulario);
-            document.getElementById('btnSalvar').addEventListener('click', salvarOrcamento);
-            document.getElementById('btnCompartilhar').addEventListener('click', compartilhar);
-            
-            document.getElementById('margem').addEventListener('input', (e) => {
-                document.getElementById('margemPercent').textContent = e.target.value;
-            });
+    document.getElementById('btnCalcular').addEventListener('click', calcularOrcamento);
+    document.getElementById('btnGerarPdf').addEventListener('click', salvarOrcamento);
+    document.getElementById('btnLimpar').addEventListener('click', limparFormulario);
+    document.getElementById('btnCompartilhar').addEventListener('click', compartilhar);
 
-            // Mostrar campo de número de matrículas
-            document.querySelectorAll('input[name="matricula"]').forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    const numMatriculasGroup = document.getElementById('numMatriculasGroup');
-                    if (e.target.value === 'multiplas') {
-                        numMatriculasGroup.style.display = 'block';
-                    } else {
-                        numMatriculasGroup.style.display = 'none';
-                    }
-                });
-            });
-        }
+    document.getElementById('margem').addEventListener('input', (e) => {
+        document.getElementById('margemPercent').textContent = e.target.value;
+    });
+
+    document.querySelectorAll('input[name="matricula"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const group = document.getElementById('numMatriculasGroup');
+            group.style.display = e.target.value === 'multiplas' ? 'block' : 'none';
+        });
+    });
+}
+
 
         function scrollToSection(id) {
             document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
@@ -1222,26 +1243,113 @@
         }
 
         function salvarOrcamento() {
-            if (!window.orcamentoAtual) {
-                alert('Calcule um orçamento antes de salvar');
-                return;
+                if (!window.orcamentoAtual) {
+                    alert('Calcule um orçamento antes de gerar o PDF');
+                    return;
+                }
+            
+                const nomeCliente = document.getElementById('clienteNome').value;
+                if (!nomeCliente) {
+                    alert('Informe o nome do cliente');
+                    return;
+                }
+            
+                const cpf = document.getElementById('clienteCpf').value || '-';
+                const imovel = document.getElementById('imovelDescricao').value || '-';
+            
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+            
+                let y = 20;
+            
+                // Cabeçalho
+                doc.setFontSize(14);
+                doc.text('GEOPLAN CONSULTORIA E PROJETOS', 105, y, { align: 'center' });
+            
+                y += 6;
+                doc.setFontSize(10);
+                doc.text('Avenida Ana Jacinta, 800 – Presidente Prudente/SP', 105, y, { align: 'center' });
+                y += 5;
+                doc.text('CNPJ 59.446.748/0001-65 | Contato: (18) 99618-3833', 105, y, { align: 'center' });
+            
+                y += 12;
+                doc.setFontSize(13);
+                doc.text('PROPOSTA DE SERVIÇO DE GEORREFERENCIAMENTO', 105, y, { align: 'center' });
+            
+                y += 12;
+                doc.setFontSize(11);
+                doc.text('I – PARTES', 14, y);
+            
+                y += 7;
+                doc.setFontSize(10);
+                doc.text(`CONTRATANTE: ${nomeCliente}`, 14, y);
+                y += 5;
+                doc.text(`CPF: ${cpf}`, 14, y);
+            
+                y += 7;
+                doc.text('CONTRATADA: GEOPLAN CONSULTORIA E PROJETOS', 14, y);
+            
+                y += 10;
+                doc.setFontSize(11);
+                doc.text('II – OBJETO', 14, y);
+            
+                y += 7;
+                doc.setFontSize(10);
+                doc.text(
+                    `Execução de serviço de Georreferenciamento de imóvel rural localizado em ${imovel}, ` +
+                    `com área aproximada de ${window.orcamentoAtual.area} hectares.`,
+                    14,
+                    y,
+                    { maxWidth: 180 }
+                );
+            
+                y += 15;
+                doc.setFontSize(11);
+                doc.text('III – SERVIÇOS INCLUSOS', 14, y);
+            
+                doc.autoTable({
+                    startY: y + 3,
+                    styles: { fontSize: 9 },
+                    head: [['Descrição']],
+                    body: [
+                        ['Levantamento do perímetro'],
+                        ['Cálculos e conversões geodésicas'],
+                        ['Elaboração de mapa e memorial descritivo'],
+                        ['Certificação no SIGEF/INCRA'],
+                        ['Implantação de marcos conforme norma']
+                    ]
+                });
+            
+                y = doc.lastAutoTable.finalY + 10;
+            
+                doc.setFontSize(11);
+                doc.text('IV – VALOR', 14, y);
+            
+                y += 7;
+                doc.setFontSize(10);
+                doc.text(
+                    `Valor total dos serviços: ${formatarMoeda(window.orcamentoAtual.total)} ` +
+                    `(${numeroPorExtenso(window.orcamentoAtual.total)})`,
+                    14,
+                    y,
+                    { maxWidth: 180 }
+                );
+            
+                y += 15;
+                doc.text(
+                    `Presidente Prudente, ${new Date().toLocaleDateString('pt-BR')}`,
+                    14,
+                    y
+                );
+            
+                y += 20;
+                doc.text('_________________________________________', 14, y);
+                y += 5;
+                doc.text('GEOPLAN CONSULTORIA E PROJETOS', 14, y);
+            
+                doc.save(`Proposta_Geoplan_${nomeCliente.replaceAll(' ', '_')}.pdf`);
             }
 
-            const orcamento = {
-                ...window.orcamentoAtual,
-                id: Date.now().toString()
-            };
-
-            let historico = JSON.parse(localStorage.getItem('orcamentos_geoplan') || '[]');
-            historico.unshift(orcamento);
-            
-            if (historico.length > 50) {
-                historico = historico.slice(0, 50);
-            }
-            
-            localStorage.setItem('orcamentos_geoplan', JSON.stringify(historico));
-            alert('Orçamento salvo com sucesso!');
-        }
 
         function compartilhar() {
             if (!window.orcamentoAtual) {
@@ -1272,9 +1380,14 @@ Gerado em ${new Date(window.orcamentoAtual.data).toLocaleDateString('pt-BR')}`;
                 });
             }
         }
+        
+        function numeroPorExtenso(valor) {
+    return 'valor conforme proposta';
+}
     </script>
 </body>
 </html>
+
 
 
 
