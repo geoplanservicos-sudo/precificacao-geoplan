@@ -807,7 +807,7 @@
                         <div class="form-group">
                             <label class="radio-label">
                                 <input type="checkbox" id="desmembramento" style="width: 18px; height: 18px; accent-color: var(--primary-color);">
-                                <span>Inclui Desmembramento - Acréscimo 30%</span>
+                                <span>Inclui Desmembramento - Acréscimo 10%</span>
                             </label>
                             <small class="form-hint">Planta e memorial individual, ajuste de perímetro</small>
                         </div>
@@ -816,7 +816,7 @@
                         <div class="form-group">
                             <label class="radio-label">
                                 <input type="checkbox" id="confrontantes" style="width: 18px; height: 18px; accent-color: var(--primary-color);">
-                                <span>Confrontantes sem GEO + CARs incorretos - Acréscimo 20%</span>
+                                <span>Confrontantes sem GEO + CARs incorretos - Acréscimo 5%</span>
                             </label>
                             <small class="form-hint">Maior risco de exigência e retrabalho</small>
                         </div>
@@ -1025,7 +1025,7 @@
             const acrescimos = [];
             acrescimos.push({
                 nome: 'Área mínima (custo técnico fixo)',
-                percentual: 20,
+                percentual: 10,
                 valor: subtotalBase * ACRESCIMO_AREA_MINIMA
             });
 
@@ -1275,6 +1275,7 @@ Gerado em ${new Date(window.orcamentoAtual.data).toLocaleDateString('pt-BR')}`;
     </script>
 </body>
 </html>
+
 
 
 
