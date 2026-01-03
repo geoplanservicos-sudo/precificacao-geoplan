@@ -1018,16 +1018,22 @@
 
 
 
-            // 2. ACRÉSCIMO DE ÁREA MÍNIMA (sempre aplicado para áreas pequenas)
-            const ACRESCIMO_AREA_MINIMA = 0.20; // 20%
-
-            let valorComAcrescimos = subtotalBase * (1 + ACRESCIMO_AREA_MINIMA);
+            // 2. ACRÉSCIMO DE ÁREA MÍNIMA (SOMENTE se área for pequena)
+            let valorComAcrescimos = subtotalBase;
             const acrescimos = [];
-            acrescimos.push({
-                nome: 'Área mínima (custo técnico fixo)',
-                percentual: 20,
-                valor: subtotalBase * ACRESCIMO_AREA_MINIMA
-            });
+            
+            if (area <= 2) {
+                const ACRESCIMO_AREA_MINIMA = 0.20; // 20%
+                const acrescimo = subtotalBase * ACRESCIMO_AREA_MINIMA;
+            
+                valorComAcrescimos += acrescimo;
+            
+                acrescimos.push({
+                    nome: 'Área mínima (custo técnico fixo)',
+                    percentual: 20,
+                    valor: acrescimo
+                });
+            }
 
             // 3. PRAZO
             const prazo = document.querySelector('input[name="prazo"]:checked').value;
@@ -1275,4 +1281,5 @@ Gerado em ${new Date(window.orcamentoAtual.data).toLocaleDateString('pt-BR')}`;
     </script>
 </body>
 </html>
+
 
