@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>GEOPLAN – Precificação Técnica</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f4f7;
+  padding: 20px;
+}
+.container {
+  max-width: 700px;
+  background: #fff;
+  padding: 25px;
+  margin: auto;
+  border-radius: 8px;
+}
+.header {
+  text-align: center;
+}
+.header img {
+  max-width: 200px;
+}
+h2 {
+  color: #1f4e79;
+}
+label {
+  margin-top: 12px;
+  display: block;
+  font-weight: bold;
+}
+input, select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+}
+button {
+  margin-top: 20px;
+  padding: 12px;
+  width: 100%;
+  background: #1f4e79;
+  color: #fff;
+  border: none;
+  font-size: 16px;
+}
+.result {
+  margin-top: 20px;
+  background: #eef3f8;
+  padding: 15px;
+  border-radius: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="header">
+    <img src="logo-geoplan.png">
+    <h2>Precificação Técnica – Georreferenciamento</h2>
+  </div>
+
+  <label>Área total (ha)</label>
+  <input id="area" type="number">
+
+  <label>Certificação SIGEF</label>
+  <select id="sigef"><option value="1.3">Sim</option><option value="1">Não</option></select>
+
+  <label>Desmembramento</label>
+  <select id="desm"><option value="1.3">Sim</option><option value="1">Não</option></select>
+
+  <label>Confrontantes sem GEO</label>
+  <select id="conf"><option value="1.2">Sim</option><option value="1">Não</option></select>
+
+  <label>CAR inconsistente</label>
+  <select id="car"><option value="1.2">Sim</option><option value="1">Não</option></select>
+
+  <label>Distância</label>
+  <select id="dist"><option value="1">Até 30 km</option><option value="1.1">30–60 km</option></select>
+
+  <button onclick="calcular()">Calcular Valor</button>
+
+  <div id="resultado" class="result" style="display:none;"></div>
+  <button onclick="gerarPDF()">Gerar PDF da Proposta</button>
+</div>
+
+<script>
+let valorFinal = 0;
+
+function calcular() {
+  let area = Number(areaInput.value);
+  let base = 405.25 + (area <= 20 ? area * 95 : area * 48.63);
+
+  valorFinal = base *
+    sigef.value *
+    desm.value *
+    conf.value *
+    car.value *
+    dist.value;
+
+  valorFinal = Math.round(valorFinal / 100) * 100;
+
+  resultado.style.display = "block";
+  resultado.innerHTML = `<strong>Valor sugerido:</strong> R$ ${valorFinal.toLocaleString("pt-BR")}`;
+}
+
+function gerarPDF() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+
+  pdf.setFontSize(12);
+  pdf.text("GEOPLAN CONSULTORIA E PROJETOS", 20, 20);
+  pdf.text("PROPOSTA DE SERVIÇOS DE GEORREFERENCIAMENTO", 20, 30);
+
+  pdf.text(`Valor total: R$ ${valorFinal.toLocaleString("pt-BR")}`, 20, 50);
+  pdf.text("Forma de pagamento:", 20, 60);
+  pdf.text("50% adiantado para execução dos serviços", 20, 68);
+  pdf.text("50% restantes a combinar", 20, 76);
+
+  pdf.text("Prazo: até 60 dias após pagamento inicial.", 20, 90);
+  pdf.text("Responsável técnico habilitado.", 20, 105);
+
+  pdf.save("Proposta_Geoplan.pdf");
+}
+</script>
+
+</body>
+</html>
