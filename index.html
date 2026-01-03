@@ -925,15 +925,15 @@
         </div>
     </footer>
 
-   <script>
-/* ========================================
+<script>
+/* =========================
    CONSTANTES
-======================================== */
+========================= */
 const VALOR_FIXO_INICIAL = 405.25;
 
-/* ========================================
-   VALOR POR FAIXA DE ÁREA (REGRA NOVA)
-======================================== */
+/* =========================
+   VALOR POR FAIXA
+========================= */
 function calcularValorVariavel(area) {
     if (area <= 5) return area * 500;
     if (area <= 10) return area * 300;
@@ -943,111 +943,110 @@ function calcularValorVariavel(area) {
     return area * 50;
 }
 
-/* ========================================
+/* =========================
    INICIALIZAÇÃO
-======================================== */
+========================= */
 document.addEventListener("DOMContentLoaded", () => {
-    initTheme();
-    initEventos();
+    document.getElementById("btnCalcular").addEventListener("click", calcularOrcamento);
 });
 
-function initEventos() {
-    document.getElementById("btnCalcular").onclick = calcularOrcamento;
-    document.getElementById("btnLimpar").onclick = () => location.reload();
-    document.getElementById("margem").oninput = e =>
-        document.getElementById("margemPercent").innerText = e.target.value;
-
-    document.querySelectorAll('input[name="matricula"]').forEach(radio => {
-        radio.addEventListener("change", e => {
-            document.getElementById("numMatriculasGroup").style.display =
-                e.target.value === "multiplas" ? "block" : "none";
-        });
-    });
-}
-
-/* ========================================
-   CÁLCULO PRINCIPAL
-======================================== */
+/* =========================
+   CÁLCULO
+========================= */
 function calcularOrcamento() {
-    const area = parseFloat(document.getElementById("area").value);
-    if (!area || area <= 0) {
+
+    const areaInput = document.getElementById("area");
+    const area = parseFloat(areaInput.value);
+
+    if (isNaN(area) || area <= 0) {
         alert("Informe uma área válida.");
         return;
     }
 
-    /* 1️⃣ BASE REAL (SEM ACRÉSCIMOS) */
+    /* BASE */
     const valorVariavel = calcularValorVariavel(area);
-    const subtotalBase = VALOR_FIXO_INICIAL + valorVariavel;
-
-    let total = subtotalBase;
+    let total = VALOR_FIXO_INICIAL + valorVariavel;
+    const subtotalBase = total;
     const acrescimos = [];
 
-    /* 2️⃣ PRAZO */
-    const prazo = document.querySelector('input[name="prazo"]:checked').value;
-    if (prazo === "folgado") aplicar(-0.05, "Prazo folgado", acrescimos);
-    if (prazo === "urgente") aplicar(0.30, "Urgência", acrescimos);
-
-    /* 3️⃣ DESLOCAMENTO */
-    const deslocMap = { ate30: 0, "30a60": 0.10, "60a100": 0.20, acima100: 0.30 };
-    const desloc = document.querySelector('input[name="deslocamento"]:checked').value;
-    if (deslocMap[desloc] > 0)
-        aplicar(deslocMap[desloc], "Deslocamento", acrescimos);
-
-    /* 4️⃣ FINALIDADE */
-    const finMap = {
-        sigef: { p: 0.20, n: "SIGEF / INCRA" },
-        desmembramento: { p: -0.30, n: "Desmembramento (desconto)" },
-        retificacao: { p: -0.15, n: "Retificação" },
-        usucapiao: { p: 0.25, n: "Usucapião" }
-    };
-    const fin = finMap[document.querySelector('input[name="finalidade"]:checked').value];
-    aplicar(fin.p, fin.n, acrescimos);
-
-    /* 5️⃣ MATRÍCULA */
-    const mat = document.querySelector('input[name="matricula"]:checked').value;
-    if (mat === "atualizacao") aplicar(-0.40, "Atualização matrícula", acrescimos);
-    if (mat === "semmatricula") aplicar(0.35, "Sem matrícula", acrescimos);
-    if (mat === "multiplas") {
-        const n = parseInt(document.getElementById("numMatriculas").value || 2) - 1;
-        aplicar(0.30 * n, `Múltiplas matrículas (${n + 1})`, acrescimos);
-    }
-
-    /* 6️⃣ TOPOGRAFIA */
-    const topoMap = {
-        ondulado: 0.15,
-        acidentado: 0.35,
-        vegetacao: 0.40,
-        urbana: 0.25
-    };
-    const topo = document.querySelector('input[name="topografia"]:checked').value;
-    if (topoMap[topo]) aplicar(topoMap[topo], "Topografia", acrescimos);
-
-    /* 7️⃣ EXTRAS */
-    if (document.getElementById("desmembramento").checked)
-        aplicar(0.30, "Desmembramento", acrescimos);
-    if (document.getElementById("confrontantes").checked)
-        aplicar(0.20, "Confrontantes sem GEO", acrescimos);
-
-    /* 8️⃣ MARGEM */
-    const margem = parseFloat(document.getElementById("margem").value) / 100;
-    const valorMargem = total * margem;
-    const valorFinal = total + valorMargem;
-
-    /* 9️⃣ RESULTADOS */
-    mostrarResultados(valorVariavel, subtotalBase, acrescimos, total, valorMargem, valorFinal);
-
-    function aplicar(percentual, nome, lista) {
+    /* FUNÇÃO APLICAR */
+    function aplicar(percentual, nome) {
         const v = total * percentual;
         total += v;
-        lista.push({ nome, percentual: percentual * 100, valor: v });
+        acrescimos.push({ nome, percentual: percentual * 100, valor: v });
     }
+
+    /* PRAZO (SE EXISTIR) */
+    const prazo = document.querySelector('input[name="prazo"]:checked');
+    if (prazo) {
+        if (prazo.value === "folgado") aplicar(-0.05, "Prazo folgado");
+        if (prazo.value === "urgente") aplicar(0.30, "Urgência");
+    }
+
+    /* DESLOCAMENTO */
+    const desloc = document.querySelector('input[name="deslocamento"]:checked');
+    if (desloc) {
+        const map = { ate30: 0, "30a60": 0.10, "60a100": 0.20, acima100: 0.30 };
+        if (map[desloc.value]) aplicar(map[desloc.value], "Deslocamento");
+    }
+
+    /* FINALIDADE */
+    const finalidade = document.querySelector('input[name="finalidade"]:checked');
+    if (finalidade) {
+        const map = {
+            sigef: [0.20, "SIGEF / INCRA"],
+            desmembramento: [-0.30, "Desmembramento"],
+            retificacao: [-0.15, "Retificação"],
+            usucapiao: [0.25, "Usucapião"]
+        };
+        const f = map[finalidade.value];
+        if (f) aplicar(f[0], f[1]);
+    }
+
+    /* MATRÍCULA */
+    const matricula = document.querySelector('input[name="matricula"]:checked');
+    if (matricula) {
+        if (matricula.value === "atualizacao") aplicar(-0.40, "Atualização matrícula");
+        if (matricula.value === "semmatricula") aplicar(0.35, "Sem matrícula");
+        if (matricula.value === "multiplas") {
+            const n = (parseInt(document.getElementById("numMatriculas")?.value) || 2) - 1;
+            aplicar(0.30 * n, `Múltiplas matrículas (${n + 1})`);
+        }
+    }
+
+    /* TOPOGRAFIA */
+    const topo = document.querySelector('input[name="topografia"]:checked');
+    if (topo) {
+        const map = {
+            ondulado: 0.15,
+            acidentado: 0.35,
+            vegetacao: 0.40,
+            urbana: 0.25
+        };
+        if (map[topo.value]) aplicar(map[topo.value], "Topografia");
+    }
+
+    /* EXTRAS */
+    if (document.getElementById("desmembramento")?.checked)
+        aplicar(0.30, "Desmembramento extra");
+
+    if (document.getElementById("confrontantes")?.checked)
+        aplicar(0.20, "Confrontantes sem GEO");
+
+    /* MARGEM */
+    const margemPerc = parseFloat(document.getElementById("margem")?.value) || 0;
+    const margem = total * (margemPerc / 100);
+    const valorFinal = total + margem;
+
+    /* EXIBIÇÃO */
+    mostrarResultados(valorVariavel, subtotalBase, acrescimos, total, margem, valorFinal);
 }
 
-/* ========================================
-   EXIBIÇÃO
-======================================== */
+/* =========================
+   RESULTADO
+========================= */
 function mostrarResultados(variavel, base, acrescimos, subtotal, margem, total) {
-    document.getElementById("emptyState").style.display = "none";
+
     document.getElementById("resultContent").style.display = "block";
 
     document.getElementById("costVariavel").innerText = moeda(variavel);
@@ -1058,9 +1057,9 @@ function mostrarResultados(variavel, base, acrescimos, subtotal, margem, total) 
 
     document.getElementById("acrescimosContainer").innerHTML =
         acrescimos.map(a => `
-            <div class="cost-item acrescimo-item">
+            <div class="cost-item">
                 <span>${a.nome} (${a.percentual > 0 ? "+" : ""}${a.percentual}%)</span>
-                <span class="cost-value">${moeda(a.valor)}</span>
+                <span>${moeda(a.valor)}</span>
             </div>
         `).join("");
 }
@@ -1073,6 +1072,8 @@ function moeda(v) {
 }
 </script>
 
+
 </body>
 </html>
+
 
